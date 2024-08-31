@@ -23,6 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install "PyQt-Fluent-Widgets[full]" -i https://pypi.org/simple/
         pip install requests
+        pip install pyinstaller
 
     - name: Build executable
       run: |
