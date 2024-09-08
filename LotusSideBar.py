@@ -123,10 +123,15 @@ class WeatherWidget(QWidget):
         self.timer.start(1800000)  # 每半小时更新一次
 
     def update_weather(self):
-        config = load_config()
+        config = self.load_config()
         weather_data = self.fetch_weather_data(config["stationid"])
         if weather_data:
             self.display_weather(weather_data)
+
+    def load_config(self):
+        # 假设配置文件是一个JSON文件
+        with open('config.json', 'r', encoding='utf-8') as file:
+            return json.load(file)
 
     def fetch_weather_data(self, stationid):
         url = f"http://www.nmc.cn/rest/weather?stationid={stationid}"
@@ -156,7 +161,6 @@ class WeatherWidget(QWidget):
                 if value != "9999":
                     return value
         return "Err"
-
 
     def extract_value(self, data, key):
         real = data["data"]["real"]
@@ -224,23 +228,49 @@ class WeatherWidget(QWidget):
         tempchart = weather_data["data"]["tempchart"]
         today = QDateTime.currentDateTime().toString('yyyy/MM/dd')
         start_index = next((index for (index, d) in enumerate(tempchart) if d["time"] == today), None)
+        
         if start_index is not None:
-            for i in range(start_index, start_index + 7):
-                day_data = tempchart[i]
-                day_of_week = "今天" if i == start_index else QDateTime.fromString(day_data["time"], 'yyyy/MM/dd').toString('ddd')
-                
-                # 处理9999的情况
-                max_temp = day_data['max_temp'] if day_data['max_temp'] != "9999" else "Err"
-                min_temp = day_data['min_temp'] if day_data['min_temp'] != "9999" else "Err"
-                day_text = day_data['day_text'] if day_data['day_text'] != "9999" else "Err"
-                night_text = day_data['night_text'] if day_data['night_text'] != "9999" else "Err"
-                
-                forecast_label = QLabel(f"{day_of_week} {max_temp}°C/{min_temp}°C {day_text}/{night_text}")
+            # 尝试获取七天的数据
+            for days in range(7, 0, -1):
+                end_index = start_index + days
+                if end_index <= len(tempchart):
+                    for i in range(start_index, end_index):
+                        day_data = tempchart[i]
+                        day_of_week = "今天" if i == start_index else QDateTime.fromString(day_data["time"], 'yyyy/MM/dd').toString('ddd')
+                        
+                        # 处理9999的情况
+                        max_temp = day_data['max_temp'] if day_data['max_temp'] != "9999" else "Err"
+                        min_temp = day_data['min_temp'] if day_data['min_temp'] != "9999" else "Err"
+                        day_text = day_data['day_text'] if day_data['day_text'] != "9999" else "Err"
+                        night_text = day_data['night_text'] if day_data['night_text'] != "9999" else "Err"
+                        
+                        forecast_label = QLabel(f"{day_of_week} {max_temp}°C/{min_temp}°C {day_text}/{night_text}")
+                        setFont(forecast_label, 35)
+                        forecast_label.setAlignment(Qt.AlignCenter)
+                        
+                        self.layout.addWidget(forecast_label)
+                    break
+            else:
+                # 如果无法获取到足够的数据，将七天的数据项全部生成，并将数值全部填写成Err
+                for i in range(7):
+                    day_of_week = QDateTime.currentDateTime().addDays(i).toString('ddd')
+                    forecast_label = QLabel(f"{day_of_week} Err°C/Err°C Err/Err")
+                    setFont(forecast_label, 35)
+                    forecast_label.setAlignment(Qt.AlignCenter)
+                    self.layout.addWidget(forecast_label)
+        else:
+            # 如果没有找到当天的数据，将七天的数据项全部生成，并将数值全部填写成Err
+            for i in range(7):
+                day_of_week = QDateTime.currentDateTime().addDays(i).toString('ddd')
+                forecast_label = QLabel(f"{day_of_week} Err°C/Err°C Err/Err")
                 setFont(forecast_label, 35)
                 forecast_label.setAlignment(Qt.AlignCenter)
-                
                 self.layout.addWidget(forecast_label)
 
+def setFont(label, size):
+    font = label.font()
+    font.setPointSize(size)
+    label.setFont(font)
 
 
 class SettingInterface(QWidget):
