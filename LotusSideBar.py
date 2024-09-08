@@ -67,7 +67,7 @@ class DailyQuoteWidget(QLabel):
         super().__init__(parent)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_quote)
-        self.timer.start(1800000)  # 每半小时更新一次
+        self.timer.start(600000)  # 每十分钟更新一次
         self.update_quote()
 
         # 设置样式
@@ -78,7 +78,7 @@ class DailyQuoteWidget(QLabel):
         self.setWordWrap(True)  # 自动换行
 
     def update_quote(self):
-        url = "https://v1.hitokoto.cn/?c=a&c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l&encode=text"
+        url = "https://v1.hitokoto.cn/?c=i&c=c&encode=text"
         response = requests.get(url)
         if response.status_code == 200:
             quote = response.text
