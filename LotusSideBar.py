@@ -123,15 +123,10 @@ class WeatherWidget(QWidget):
         self.timer.start(1800000)  # 每半小时更新一次
 
     def update_weather(self):
-        config = self.load_config()
+        config = load_config()
         weather_data = self.fetch_weather_data(config["stationid"])
         if weather_data:
             self.display_weather(weather_data)
-
-    def load_config(self):
-        # 假设配置文件是一个JSON文件
-        with open('config.json', 'r', encoding='utf-8') as file:
-            return json.load(file)
 
     def fetch_weather_data(self, stationid):
         url = f"http://www.nmc.cn/rest/weather?stationid={stationid}"
@@ -266,12 +261,6 @@ class WeatherWidget(QWidget):
                 setFont(forecast_label, 35)
                 forecast_label.setAlignment(Qt.AlignCenter)
                 self.layout.addWidget(forecast_label)
-
-def setFont(label, size):
-    font = label.font()
-    font.setPointSize(size)
-    label.setFont(font)
-
 
 class SettingInterface(QWidget):
     def __init__(self, parent=None):
