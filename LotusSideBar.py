@@ -80,7 +80,7 @@ class DailyQuoteWidget(QLabel):
     def update_quote(self):
         url = "https://v1.hitokoto.cn/?c=i&c=c&encode=text"
         response = requests.get(url)
-        if response.status_code == 200:
+        if response.status_code == 200: 
             quote = response.text
             self.setText(quote)
 
